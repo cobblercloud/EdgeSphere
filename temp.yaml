@@ -1,0 +1,35 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: edge
+      POSTGRES_PASSWORD: edgepass
+      POSTGRES_DB: edgesphere
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - edgesphere
+
+  redis:
+    image: redis:6-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    networks:
+      - edgesphere
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    networks:
+      - edgesphere
+
+networks:
+  edgesphere:
+
+volumes:
+  pgdata:
+  redisdata:

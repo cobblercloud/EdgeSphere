@@ -66,3 +66,11 @@ go test -v ./tests -run TestConnectionScaling
 ## 故障转移测试
 
 go test -v ./tests -run TestFailoverRecovery
+
+# 生成 go.mod
+
+go mod init edgesphere
+
+# 生成 go.sum
+
+go mod tidy
