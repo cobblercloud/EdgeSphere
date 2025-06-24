@@ -1,0 +1,77 @@
+version: "3.8"
+
+services:
+  edge-gateway:
+    build:
+      context: .
+      dockerfile: cmd/edge-gateway/Dockerfile
+    ports:
+      - "1883:1883"
+      - "8081:8080" # 管理端口
+    volumes:
+      - ./data/edge:/data
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+    deploy:
+      replicas: 2
+    networks:
+      - edgesphere
+
+  device-manager:
+    build:
+      context: .
+      dockerfile: cmd/device-manager/Dockerfile
+    environment:
+      - REDIS_HOST=redis
+      - POSTGRES_HOST=postgres
+    ports:
+      - "50051:50051"
+      - "8082:8080"
+    networks:
+      - edgesphere
+    depends_on:
+      - postgres
+      - redis
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: cmd/api-gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - edgesphere
+
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: edge
+      POSTGRES_PASSWORD: edgepass
+      POSTGRES_DB: edgesphere
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - edgesphere
+
+  redis:
+    image: redis:6-alpine
+    command: redis-server --appendonly yes
+    volumes:
+      - redisdata:/data
+    networks:
+      - edgesphere
+
+  mqtt:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    networks:
+      - edgesphere
+
+networks:
+  edgesphere:
+
+volumes:
+  pgdata:
+  redisdata:
